@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { colorOf } from './colors';
 import { Agent, HookEvent, apply, createModel, isBusy, resolveFile, tick } from './core/state';
 import { demoScript, pickDemoFiles } from './demo';
 import { EditorView } from './editor';
@@ -68,13 +67,13 @@ export function activate(context: vscode.ExtensionContext) {
     if (!a) {
       const any = model.agents.size > 0;
       status.text = '$(sparkle) Agent Cursor';
-      status.tooltip = any ? 'Agents are idle' : connected ? 'Waiting for Claude Code' : 'Claude Code not connected';
+      status.tooltip = any ? 'Agents are idle' : connected ? 'Waiting for a coding agent' : 'No coding agent connected';
       status.color = undefined;
     } else {
       const others = [...model.agents.values()].filter((x) => x !== a && isBusy(x)).length;
       status.text = `$(sparkle) ${a.label} · ${a.detail}${others ? ` +${others}` : ''}`;
       status.tooltip = 'Show the Agent panel';
-      status.color = colorOf(a.colorIndex);
+      status.color = a.color;
     }
     status.show();
   }
@@ -179,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
       demoTimers.forEach(clearTimeout);
-      for (const [k, a] of model.agents) if (a.sid === 'agent-cursor-demo') model.agents.delete(k);
+      for (const [k, a] of model.agents) if (a.sid.startsWith('agent-cursor-demo')) model.agents.delete(k);
       panel.reveal();
       const start = Date.now() + 300;
       demoTimers = demoScript(files, root, start).map((ev) =>
@@ -187,7 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
       );
       demoTimers.push(
         setTimeout(() => {
-          for (const [k, a] of model.agents) if (a.sid === 'agent-cursor-demo') model.agents.delete(k);
+          for (const [k, a] of model.agents) if (a.sid.startsWith('agent-cursor-demo')) model.agents.delete(k);
           for (const [f, t] of model.touched) if (t.agentKey.startsWith('agent-cursor-demo')) model.touched.delete(f);
           model.feed = model.feed.filter((x) => !x.agentKey.startsWith('agent-cursor-demo'));
           redraw();
@@ -201,7 +200,7 @@ export function activate(context: vscode.ExtensionContext) {
   if (!connected && !context.globalState.get('agentCursor.welcomed')) {
     context.globalState.update('agentCursor.welcomed', true);
     vscode.window
-      .showInformationMessage('Agent Cursor shows where Claude Code is working in your files. Connect it now?', 'Connect', 'Try the demo')
+      .showInformationMessage('Agent Cursor shows where your coding agents are working (Claude Code, Codex, Gemini CLI, Cursor and more). Connect them now?', 'Connect', 'Try the demo')
       .then((pick) => {
         if (pick === 'Connect') vscode.commands.executeCommand('agentCursor.connect');
         if (pick === 'Try the demo') vscode.commands.executeCommand('agentCursor.demo');

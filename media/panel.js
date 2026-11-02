@@ -1,7 +1,6 @@
 // Agent Cursor sidebar panel. Plain JS, no libraries.
 (function () {
   const vscode = acquireVsCodeApi();
-  const PALETTE = ['#E0533F', '#4C7BD9', '#1FA392', '#D9971E', '#9A6BE0'];
   const ROW = 22;
   const BIG_TREE = 400;
   const VERB = {
@@ -55,7 +54,7 @@
     </section>`;
 
   const $ = (id) => document.getElementById(id);
-  const color = (i) => PALETTE[i % PALETTE.length];
+  const shapeSvg = (d) => `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/></svg>`;
   const esc = (s) =>
     String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -200,7 +199,7 @@
       const t = byFile.get(el.dataset.file);
       el.classList.toggle('read', !!t && !t.edited);
       el.classList.toggle('edited', !!t && t.edited);
-      el.style.setProperty('--c', t ? color(t.colorIndex) : 'transparent');
+      el.style.setProperty('--c', t ? t.color : 'transparent');
       el.querySelector('.mark').textContent = t ? (t.edited ? '✎' : '•') : '';
     }
   }
@@ -226,11 +225,11 @@
         el = document.createElement('div');
         el.className = 'agent';
         el.dataset.key = a.key;
-        el.innerHTML = `<div class="bar"></div><div class="bot"><span class="ring"></span><span class="core">✦</span></div><div class="verb"></div>`;
+        el.innerHTML = `<div class="bar"></div><div class="bot"><span class="ring"></span><span class="core">${shapeSvg(a.shape)}</span></div><div class="verb"></div>`;
         layer.appendChild(el);
         el.style.top = `${idx * ROW}px`;
       }
-      const c = color(a.colorIndex);
+      const c = a.color;
       el.style.setProperty('--c', c);
       el.style.setProperty('--slot', slot);
       el.classList.toggle('busy', a.activity !== 'idle');
@@ -280,9 +279,9 @@
     if (!state.agents.length) {
       box.innerHTML = `<div class="empty">
         <div class="empty-bot"><span class="ring"></span><span class="core">✦</span></div>
-        <p>${state.connected ? 'Waiting for Claude Code. Start a session in this folder and the agent shows up here.' : 'Claude Code isn’t connected yet.'}</p>
+        <p>${state.connected ? 'Waiting for a coding agent. Start a session in this folder and it shows up here.' : 'No coding agent connected yet.'}</p>
         <div class="actions">
-          ${state.connected ? '' : '<button class="primary" data-act="connect">Connect Claude Code</button>'}
+          ${state.connected ? '' : '<button class="primary" data-act="connect">Connect an agent</button>'}
           <button class="${state.connected ? 'primary' : ''}" data-act="demo">Try the demo</button>
         </div></div>`;
       return;
@@ -295,8 +294,8 @@
     box.innerHTML = order
       .map((a) => {
         const where = a.file ? `<button class="where" data-file="${esc(a.file)}" data-line="${a.line ?? 0}">${esc(a.file.split(/[\\/]/).pop())}${a.line !== undefined ? `:${a.line + 1}` : ''}</button>` : '';
-        return `<div class="who ${a.sub ? 'sub' : ''} ${a.activity !== 'idle' ? 'busy' : ''}" data-css="--c:${color(a.colorIndex)}">
-          <span class="dot"></span>
+        return `<div class="who ${a.sub ? 'sub' : ''} ${a.activity !== 'idle' ? 'busy' : ''}" data-css="--c:${a.color}">
+          <span class="mark-shape">${shapeSvg(a.shape)}</span>
           <div class="txt"><div class="line1"><b>${esc(a.label)}</b><span class="pill">${esc(VERB[a.activity] || a.activity)}</span></div>
           <div class="line2">${esc(a.detail)} ${where}</div></div></div>`;
       })
@@ -308,6 +307,7 @@
     const act = e.target.closest('[data-act]');
     if (act) vscode.postMessage({ type: act.dataset.act });
     const where = e.target.closest('[data-file]:not(.row)');
+    if (act) return;
     if (where) vscode.postMessage({ type: 'open', file: where.dataset.file, line: Number(where.dataset.line) || 0 });
   });
 
@@ -329,8 +329,8 @@
     }
     list.innerHTML = state.feed
       .map(
-        (f) => `<li data-css="--c:${color(f.colorIndex)}" ${f.file ? `data-file="${esc(f.file)}" data-line="${f.line ?? 0}"` : ''} class="${f.file ? 'link' : ''}">
-          <span class="dot"></span><span class="what"><span class="by">${esc(f.label)}</span> ${esc(f.text)}</span><time>${ago(f.at)}</time></li>`,
+        (f) => `<li data-css="--c:${f.color}" ${f.file ? `data-file="${esc(f.file)}" data-line="${f.line ?? 0}"` : ''} class="${f.file ? 'link' : ''}">
+          <span class="mk">${shapeSvg(f.shape)}</span><span class="what"><span class="by">${esc(f.label)}</span> ${esc(f.text)}</span><time>${ago(f.at)}</time></li>`,
       )
       .join('');
     applyCss(list);

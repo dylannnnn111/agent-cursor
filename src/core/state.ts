@@ -3,6 +3,7 @@
 
 import * as path from 'path';
 import { countLines, locate, LineRange } from './locate';
+import { kindOf, shadeOf, shapePath } from './kinds';
 
 export type Activity =
   | 'reading'
@@ -28,6 +29,8 @@ export interface HookEvent {
   input?: Record<string, any>;
   hunks?: { newStart: number; newLines: number }[];
   prompt?: string;
+  agent?: string; // which coding agent sent it (claude, codex, gemini...); missing = claude
+  model?: string;
 }
 
 export interface Agent {
@@ -36,7 +39,10 @@ export interface Agent {
   aid?: string;
   parentKey?: string;
   label: string;
-  colorIndex: number;
+  kind: string;
+  shade: number;
+  color: string;
+  model?: string;
   activity: Activity;
   detail: string;
   file?: string;
@@ -49,7 +55,9 @@ export interface Agent {
 
 export interface Change {
   agentKey: string;
-  colorIndex: number;
+  kind: string;
+  color: string;
+  shade: number;
   file: string;
   start: number;
   end: number;
@@ -59,7 +67,8 @@ export interface Change {
 export interface FeedItem {
   at: number;
   agentKey: string;
-  colorIndex: number;
+  kind: string;
+  color: string;
   label: string;
   activity: Activity;
   text: string;
@@ -71,7 +80,8 @@ export interface Touch {
   read: boolean;
   edited: boolean;
   agentKey: string;
-  colorIndex: number;
+  kind: string;
+  color: string;
   at: number;
 }
 
@@ -82,10 +92,8 @@ export interface Model {
   touched: Map<string, Touch>;
   pending: Map<string, LineRange>; // edit location found before the edit, by tool_use_id
   sessions: number;
-  nextColor: number;
 }
 
-export const COLORS = 5;
 export const FADE_MS = 10_000;
 export const IDLE_MS = 90_000;
 export const SUBAGENT_LINGER_MS = 4_000;
@@ -96,7 +104,7 @@ const MAX_HIGHLIGHT_LINES = 400;
 export type ReadText = (file: string) => string | undefined;
 
 export function createModel(): Model {
-  return { agents: new Map(), changes: [], feed: [], touched: new Map(), pending: new Map(), sessions: 0, nextColor: 0 };
+  return { agents: new Map(), changes: [], feed: [], touched: new Map(), pending: new Map(), sessions: 0 };
 }
 
 function keyOf(ev: HookEvent): string {
@@ -105,30 +113,36 @@ function keyOf(ev: HookEvent): string {
 
 export const DEMO_SID = 'agent-cursor-demo';
 
-// Lowest free number among the sessions on screen, so a fresh session after the
-// others have ended is "Claude" again rather than "Claude 4".
-function sessionLabel(m: Model, sid: string): string {
-  if (sid === DEMO_SID) return 'Demo';
+// Lowest free number among this agent type's sessions on screen, so a fresh
+// session after the others have ended is "Claude" again rather than "Claude 4".
+function sessionNumber(m: Model, kind: string): number {
   const used = new Set<number>();
-  for (const a of m.agents.values()) {
-    if (a.parentKey || a.sid === DEMO_SID) continue;
-    const n = a.label === 'Claude' ? 1 : Number(/^Claude (\d+)$/.exec(a.label)?.[1]);
-    if (n) used.add(n);
-  }
+  for (const a of m.agents.values()) if (!a.parentKey && a.kind === kind && !a.sid.startsWith(DEMO_SID)) used.add(labelNumber(a.label));
   let n = 1;
   while (used.has(n)) n++;
-  return n === 1 ? 'Claude' : `Claude ${n}`;
+  return n;
+}
+
+function labelNumber(label: string): number {
+  const m = /(\d+)$/.exec(label);
+  return m ? Number(m[1]) : 1;
 }
 
 function ensureSession(m: Model, ev: HookEvent): Agent {
   let a = m.agents.get(ev.sid);
   if (!a) {
     m.sessions++;
+    const kind = kindOf(ev.agent ?? 'claude').id;
+    const demo = ev.sid.startsWith(DEMO_SID);
+    const n = demo ? 1 : sessionNumber(m, kind);
+    const name = kindOf(kind).name;
     a = {
       key: ev.sid,
       sid: ev.sid,
-      label: sessionLabel(m, ev.sid),
-      colorIndex: m.nextColor++ % COLORS,
+      label: demo ? `${name} (demo)` : n === 1 ? name : `${name} ${n}`,
+      kind,
+      shade: (n - 1) % 3,
+      color: shadeOf(kind, n - 1),
       activity: 'idle',
       detail: 'Waiting',
       startedAt: ev.t,
@@ -136,6 +150,7 @@ function ensureSession(m: Model, ev: HookEvent): Agent {
     };
     m.agents.set(a.key, a);
   }
+  if (ev.model && !a.model) a.model = ev.model;
   return a;
 }
 
@@ -145,13 +160,17 @@ function ensureAgent(m: Model, ev: HookEvent): Agent {
   const key = keyOf(ev);
   let a = m.agents.get(key);
   if (!a) {
+    const siblings = [...m.agents.values()].filter((x) => x.parentKey === parent.key).length;
+    const shade = parent.shade + 1 + siblings;
     a = {
       key,
       sid: ev.sid,
       aid: ev.aid,
       parentKey: parent.key,
       label: ev.atype ? `${parent.label} › ${ev.atype}` : `${parent.label} › subagent`,
-      colorIndex: m.nextColor++ % COLORS,
+      kind: parent.kind,
+      shade: shade % 3,
+      color: shadeOf(parent.kind, shade),
       activity: 'thinking',
       detail: 'Starting',
       startedAt: ev.t,
@@ -186,7 +205,8 @@ function push(m: Model, a: Agent, at: number, text: string) {
   m.feed.unshift({
     at,
     agentKey: a.key,
-    colorIndex: a.colorIndex,
+    kind: a.kind,
+    color: a.color,
     label: a.label,
     activity: a.activity,
     text,
@@ -197,11 +217,12 @@ function push(m: Model, a: Agent, at: number, text: string) {
 }
 
 function touch(m: Model, a: Agent, file: string, kind: 'read' | 'edited', at: number) {
-  const t = m.touched.get(file) ?? { read: false, edited: false, agentKey: a.key, colorIndex: a.colorIndex, at };
+  const t = m.touched.get(file) ?? { read: false, edited: false, agentKey: a.key, kind: a.kind, color: a.color, at };
   if (kind === 'read') t.read = true;
   else t.edited = true;
   t.agentKey = a.key;
-  t.colorIndex = a.colorIndex;
+  t.kind = a.kind;
+  t.color = a.color;
   t.at = at;
   m.touched.set(file, t);
 }
@@ -320,7 +341,9 @@ function afterTool(m: Model, a: Agent, ev: HookEvent, readText: ReadText, failed
     for (const r of ranges) {
       m.changes.push({
         agentKey: a.key,
-        colorIndex: a.colorIndex,
+        kind: a.kind,
+        color: a.color,
+        shade: a.shade,
         file,
         start: r.start,
         end: Math.min(r.end, r.start + MAX_HIGHLIGHT_LINES),
@@ -437,7 +460,10 @@ export function snapshot(m: Model, now: number) {
     agents: [...m.agents.values()].map((a) => ({
       key: a.key,
       label: a.label,
-      colorIndex: a.colorIndex,
+      kind: a.kind,
+      color: a.color,
+      model: a.model,
+      shape: shapePath(kindOf(a.kind).shape),
       activity: a.activity,
       detail: a.detail,
       file: a.file,
@@ -445,6 +471,6 @@ export function snapshot(m: Model, now: number) {
       sub: !!a.parentKey,
     })),
     touched: [...m.touched.entries()].map(([file, t]) => ({ file, ...t })),
-    feed: m.feed.slice(0, 40),
+    feed: m.feed.slice(0, 40).map((f) => ({ ...f, shape: shapePath(kindOf(f.kind).shape) })),
   };
 }

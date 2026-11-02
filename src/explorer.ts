@@ -1,8 +1,9 @@
 // Badges in the normal file explorer. VS Code only allows a 1-2 character badge
-// and a theme colour here, so: ✦ where an agent is right now, ✎ for files it
+// and a theme colour here, so: the agent's own glyph (✦ Claude, ⬢ Codex...) where it is right now, ✎ for files it
 // changed, • for files it read. The animated view lives in the Agent panel.
 
 import * as vscode from 'vscode';
+import { kindOf } from './core/kinds';
 import { Model, isBusy } from './core/state';
 
 export class ExplorerBadges implements vscode.FileDecorationProvider, vscode.Disposable {
@@ -22,9 +23,9 @@ export class ExplorerBadges implements vscode.FileDecorationProvider, vscode.Dis
     if (here.length) {
       const a = here.find(isBusy) ?? here[0];
       const d = new vscode.FileDecoration(
-        '✦',
+        kindOf(a.kind).glyph,
         here.map((h) => `${h.label}: ${h.detail}`).join('\n'),
-        new vscode.ThemeColor(`agentCursor.agent${a.colorIndex}`),
+        new vscode.ThemeColor(`agentCursor.${kindOf(a.kind).id}`),
       );
       d.propagate = true;
       return d;
@@ -33,8 +34,8 @@ export class ExplorerBadges implements vscode.FileDecorationProvider, vscode.Dis
     if (!t) return undefined;
     return new vscode.FileDecoration(
       t.edited ? '✎' : '•',
-      t.edited ? 'Changed by the agent' : 'Read by the agent',
-      new vscode.ThemeColor(`agentCursor.agent${t.colorIndex}`),
+      `${t.edited ? 'Changed' : 'Read'} by ${kindOf(t.kind).name}`,
+      new vscode.ThemeColor(`agentCursor.${kindOf(t.kind).id}`),
     );
   }
 

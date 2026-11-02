@@ -44,11 +44,10 @@ export function demoScript(files: string[], cwd: string, start: number): HookEve
     ev(5.6, { ev: 'PostToolUse', tool: 'Read', tuid: 'd3', input: { file_path: f(1) } }),
     ev(6.0, { tool: 'Grep', tuid: 'd4', input: { pattern: 'def |function ' } }),
     ev(6.8, { ev: 'PostToolUse', tool: 'Grep', tuid: 'd4' }),
-    ev(7.2, { tool: 'Task', tuid: 'd5', input: { description: 'Find existing tests', subagent_type: 'Explore' } }),
-    ev(7.4, { ev: 'SubagentStart', aid: 'x1', atype: 'Explore' }),
+    ev(7.2, { ev: 'SessionStart', sid: `${DEMO_SID}-codex`, agent: 'codex' }),
   ];
-  // the subagent wanders while the main agent edits
-  const sub = (s: number, e: Partial<HookEvent>) => ev(s, { aid: 'x1', atype: 'Explore', ...e });
+  // a Codex session wanders through other files while Claude edits
+  const sub = (s: number, e: Partial<HookEvent>) => ev(s, { sid: `${DEMO_SID}-codex`, agent: 'codex', ...e });
   out.push(
     sub(7.8, { tool: 'Read', tuid: 's1', input: { file_path: f(2) } }),
     sub(9.4, { ev: 'PostToolUse', tool: 'Read', tuid: 's1', input: { file_path: f(2) } }),
@@ -56,8 +55,25 @@ export function demoScript(files: string[], cwd: string, start: number): HookEve
     sub(11.2, { ev: 'PostToolUse', tool: 'Read', tuid: 's2', input: { file_path: f(3) } }),
     sub(11.6, { tool: 'Read', tuid: 's3', input: { file_path: f(4) } }),
     sub(13.0, { ev: 'PostToolUse', tool: 'Read', tuid: 's3', input: { file_path: f(4) } }),
-    sub(13.4, { ev: 'SubagentStop' }),
-    ev(13.5, { ev: 'PostToolUse', tool: 'Task', tuid: 'd5' }),
+    sub(13.4, { tool: 'Edit', tuid: 's4', input: { file_path: f(3) } }),
+    sub(14.4, { ev: 'PostToolUse', tool: 'Edit', tuid: 's4', input: { file_path: f(3) }, hunks: [{ newStart: mid(3, 0.4), newLines: 3 }] }),
+    sub(15.0, { ev: 'Stop' }),
+  );
+  // and a Gemini session reads and runs the tests
+  const gem = (s: number, e: Partial<HookEvent>) => ev(s, { sid: `${DEMO_SID}-gemini`, agent: 'gemini', ...e });
+  out.push(
+    gem(3.0, { ev: 'SessionStart' }),
+    gem(3.4, { tool: 'Read', tuid: 'g1', input: { file_path: f(4) } }),
+    gem(5.2, { ev: 'PostToolUse', tool: 'Read', tuid: 'g1', input: { file_path: f(4) } }),
+    gem(5.6, { tool: 'Read', tuid: 'g2', input: { file_path: f(5) } }),
+    gem(8.0, { ev: 'PostToolUse', tool: 'Read', tuid: 'g2', input: { file_path: f(5) } }),
+    gem(8.4, { tool: 'Edit', tuid: 'g3', input: { file_path: f(5) } }),
+    gem(9.6, { ev: 'PostToolUse', tool: 'Edit', tuid: 'g3', input: { file_path: f(5) }, hunks: [{ newStart: mid(5, 0.6), newLines: 4 }] }),
+    gem(10.2, { tool: 'Bash', tuid: 'g4', input: { command: 'pytest -q' } }),
+    gem(13.0, { ev: 'PostToolUse', tool: 'Bash', tuid: 'g4' }),
+    gem(16.5, { tool: 'Read', tuid: 'g5', input: { file_path: f(2) } }),
+    gem(18.5, { ev: 'PostToolUse', tool: 'Read', tuid: 'g5', input: { file_path: f(2) } }),
+    gem(19.5, { ev: 'Stop' }),
   );
   const l1 = mid(1, 0.3);
   const l2 = mid(1, 0.65);

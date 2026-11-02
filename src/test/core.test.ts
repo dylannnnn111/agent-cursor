@@ -79,7 +79,7 @@ test('subagents get their own colour and go away after they finish', () => {
   apply(m, ev({ aid: 'a1', atype: 'Explore', tool: 'Grep', input: { pattern: 'def ' } }), read);
   const sub = m.agents.get('s1:a1')!;
   assert.equal(sub.label, 'Claude › Explore');
-  assert.notEqual(sub.colorIndex, m.agents.get('s1')!.colorIndex);
+  assert.notEqual(sub.color, m.agents.get('s1')!.color);
   assert.equal(sub.activity, 'searching');
   apply(m, ev({ ev: 'SubagentStop', aid: 'a1' }), read);
   assert.equal(tick(m, t + SUBAGENT_LINGER_MS + 1), true);
@@ -98,7 +98,7 @@ test('two sessions are told apart', () => {
   apply(m, ev({ sid: 's2', ev: 'SessionEnd' }), read);
   apply(m, ev({ sid: 'agent-cursor-demo', ev: 'SessionStart' }), read);
   apply(m, ev({ sid: 's3', ev: 'SessionStart' }), read);
-  assert.deepEqual([...m.agents.values()].map((a) => a.label), ['Demo', 'Claude']);
+  assert.deepEqual([...m.agents.values()].map((a) => a.label), ['Claude (demo)', 'Claude']);
 });
 
 test('glow fades, quiet agents go idle, SessionEnd removes them', () => {

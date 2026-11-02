@@ -1,8 +1,8 @@
 {
   "name": "agent-cursor",
   "displayName": "Agent Cursor",
-  "description": "See where your coding agent is working, live: a marker on the line it's on, glowing edits, explorer badges and a sidebar where it moves between your files.",
-  "version": "0.1.2",
+  "description": "See where your coding agents are working, live: Claude Code, Codex, Gemini CLI, Qwen Code, Cursor, Copilot CLI, OpenCode, Kimi Code and Windsurf, each with its own look.",
+  "version": "0.2.0",
   "publisher": "dylanlewis",
   "license": "MIT",
   "author": {
@@ -28,11 +28,17 @@
     "Other"
   ],
   "keywords": [
-    "claude",
     "claude code",
-    "agent",
-    "ai",
+    "codex",
+    "gemini cli",
+    "qwen code",
+    "cursor",
+    "copilot",
+    "opencode",
+    "kimi",
+    "windsurf",
     "coding agent",
+    "ai agent",
     "visualise"
   ],
   "main": "./out/extension.js",
@@ -61,12 +67,12 @@
     "commands": [
       {
         "command": "agentCursor.connect",
-        "title": "Connect Claude Code",
+        "title": "Connect Coding Agents",
         "category": "Agent Cursor"
       },
       {
         "command": "agentCursor.disconnect",
-        "title": "Disconnect Claude Code",
+        "title": "Disconnect Coding Agents",
         "category": "Agent Cursor"
       },
       {
@@ -97,48 +103,102 @@
     },
     "colors": [
       {
-        "id": "agentCursor.agent0",
-        "description": "First agent",
+        "id": "agentCursor.claude",
+        "description": "claude agent",
         "defaults": {
           "dark": "#E0533F",
-          "light": "#D0442F",
+          "light": "#C8432F",
           "highContrast": "#FF6B57"
         }
       },
       {
-        "id": "agentCursor.agent1",
-        "description": "Second agent",
+        "id": "agentCursor.codex",
+        "description": "codex agent",
+        "defaults": {
+          "dark": "#22B07D",
+          "light": "#178258",
+          "highContrast": "#5FD3A4"
+        }
+      },
+      {
+        "id": "agentCursor.gemini",
+        "description": "gemini agent",
         "defaults": {
           "dark": "#4C7BD9",
-          "light": "#3466C4",
-          "highContrast": "#7FA4F0"
+          "light": "#2D58B5",
+          "highContrast": "#86A6EE"
         }
       },
       {
-        "id": "agentCursor.agent2",
-        "description": "Third agent",
+        "id": "agentCursor.qwen",
+        "description": "qwen agent",
         "defaults": {
-          "dark": "#1FA392",
-          "light": "#14877A",
-          "highContrast": "#3FD6C2"
+          "dark": "#8B5CF6",
+          "light": "#6A37DD",
+          "highContrast": "#B094FA"
         }
       },
       {
-        "id": "agentCursor.agent3",
-        "description": "Fourth agent",
+        "id": "agentCursor.kimi",
+        "description": "kimi agent",
+        "defaults": {
+          "dark": "#14B8A6",
+          "light": "#0D8A7C",
+          "highContrast": "#5EE0CF"
+        }
+      },
+      {
+        "id": "agentCursor.cursor",
+        "description": "cursor agent",
+        "defaults": {
+          "dark": "#C3CCD9",
+          "light": "#5B6678",
+          "highContrast": "#E6EBF2"
+        }
+      },
+      {
+        "id": "agentCursor.copilot",
+        "description": "copilot agent",
         "defaults": {
           "dark": "#D9971E",
-          "light": "#B87A0E",
-          "highContrast": "#F5B940"
+          "light": "#A8730F",
+          "highContrast": "#F1BC54"
         }
       },
       {
-        "id": "agentCursor.agent4",
-        "description": "Fifth agent",
+        "id": "agentCursor.opencode",
+        "description": "opencode agent",
         "defaults": {
-          "dark": "#9A6BE0",
-          "light": "#7B4FC7",
-          "highContrast": "#B994F5"
+          "dark": "#E0559B",
+          "light": "#B33A78",
+          "highContrast": "#F08CC0"
+        }
+      },
+      {
+        "id": "agentCursor.windsurf",
+        "description": "windsurf agent",
+        "defaults": {
+          "dark": "#38BDF8",
+          "light": "#0E7DB0",
+          "highContrast": "#7DD3FC"
+        }
+      },
+      {
+        "id": "agentCursor.cline",
+        "description": "cline agent",
+        "defaults": {
+          "dark": "#E8C33A",
+          "light": "#9A7A10",
+          "highContrast": "#F5DA77"
+        }
+      },
+      {
+        "id": "agentCursor.agent",
+        "description": "agent agent",
+        "defaults": {
+          "dark": "#9AA7BD",
+          "light": "#6F7C93",
+          "highContrast": "#C3CCDA"
         }
       }
     ]
