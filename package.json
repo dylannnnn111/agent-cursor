@@ -5,33 +5,85 @@
   "version": "0.1.0",
   "publisher": "dylanlewis",
   "license": "MIT",
-  "author": { "name": "Dylan Lewis", "url": "https://dylanlewis.au" },
-  "repository": { "type": "git", "url": "https://github.com/dylannnnn111/agent-cursor" },
+  "author": {
+    "name": "Dylan Lewis",
+    "url": "https://dylanlewis.au"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dylannnnn111/agent-cursor"
+  },
   "homepage": "https://github.com/dylannnnn111/agent-cursor#readme",
   "icon": "media/icon.png",
-  "galleryBanner": { "color": "#0d1726", "theme": "dark" },
-  "engines": { "vscode": "^1.90.0" },
-  "categories": ["Visualization", "AI", "Other"],
-  "keywords": ["claude", "claude code", "agent", "ai", "coding agent", "visualise"],
+  "galleryBanner": {
+    "color": "#0d1726",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "categories": [
+    "Visualization",
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "claude code",
+    "agent",
+    "ai",
+    "coding agent",
+    "visualise"
+  ],
   "main": "./out/extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        { "id": "agentCursor", "title": "Agent Cursor", "icon": "media/activity.svg" }
+        {
+          "id": "agentCursor",
+          "title": "Agent Cursor",
+          "icon": "media/activity.svg"
+        }
       ]
     },
     "views": {
       "agentCursor": [
-        { "type": "webview", "id": "agentCursor.panel", "name": "Agent" }
+        {
+          "type": "webview",
+          "id": "agentCursor.panel",
+          "name": "Agent"
+        }
       ]
     },
     "commands": [
-      { "command": "agentCursor.connect", "title": "Connect Claude Code", "category": "Agent Cursor" },
-      { "command": "agentCursor.disconnect", "title": "Disconnect Claude Code", "category": "Agent Cursor" },
-      { "command": "agentCursor.toggleFollow", "title": "Toggle Follow the Agent", "category": "Agent Cursor" },
-      { "command": "agentCursor.showPanel", "title": "Show the Agent Panel", "category": "Agent Cursor" },
-      { "command": "agentCursor.demo", "title": "Run the Demo", "category": "Agent Cursor" }
+      {
+        "command": "agentCursor.connect",
+        "title": "Connect Claude Code",
+        "category": "Agent Cursor"
+      },
+      {
+        "command": "agentCursor.disconnect",
+        "title": "Disconnect Claude Code",
+        "category": "Agent Cursor"
+      },
+      {
+        "command": "agentCursor.toggleFollow",
+        "title": "Toggle Follow the Agent",
+        "category": "Agent Cursor"
+      },
+      {
+        "command": "agentCursor.showPanel",
+        "title": "Show the Agent Panel",
+        "category": "Agent Cursor"
+      },
+      {
+        "command": "agentCursor.demo",
+        "title": "Run the Demo",
+        "category": "Agent Cursor"
+      }
     ],
     "configuration": {
       "title": "Agent Cursor",
@@ -44,11 +96,51 @@
       }
     },
     "colors": [
-      { "id": "agentCursor.agent0", "description": "First agent", "defaults": { "dark": "#E0533F", "light": "#D0442F", "highContrast": "#FF6B57" } },
-      { "id": "agentCursor.agent1", "description": "Second agent", "defaults": { "dark": "#4C7BD9", "light": "#3466C4", "highContrast": "#7FA4F0" } },
-      { "id": "agentCursor.agent2", "description": "Third agent", "defaults": { "dark": "#1FA392", "light": "#14877A", "highContrast": "#3FD6C2" } },
-      { "id": "agentCursor.agent3", "description": "Fourth agent", "defaults": { "dark": "#D9971E", "light": "#B87A0E", "highContrast": "#F5B940" } },
-      { "id": "agentCursor.agent4", "description": "Fifth agent", "defaults": { "dark": "#9A6BE0", "light": "#7B4FC7", "highContrast": "#B994F5" } }
+      {
+        "id": "agentCursor.agent0",
+        "description": "First agent",
+        "defaults": {
+          "dark": "#E0533F",
+          "light": "#D0442F",
+          "highContrast": "#FF6B57"
+        }
+      },
+      {
+        "id": "agentCursor.agent1",
+        "description": "Second agent",
+        "defaults": {
+          "dark": "#4C7BD9",
+          "light": "#3466C4",
+          "highContrast": "#7FA4F0"
+        }
+      },
+      {
+        "id": "agentCursor.agent2",
+        "description": "Third agent",
+        "defaults": {
+          "dark": "#1FA392",
+          "light": "#14877A",
+          "highContrast": "#3FD6C2"
+        }
+      },
+      {
+        "id": "agentCursor.agent3",
+        "description": "Fourth agent",
+        "defaults": {
+          "dark": "#D9971E",
+          "light": "#B87A0E",
+          "highContrast": "#F5B940"
+        }
+      },
+      {
+        "id": "agentCursor.agent4",
+        "description": "Fifth agent",
+        "defaults": {
+          "dark": "#9A6BE0",
+          "light": "#7B4FC7",
+          "highContrast": "#B994F5"
+        }
+      }
     ]
   },
   "scripts": {
@@ -59,7 +151,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/vscode": "1.90.0",
+    "@types/vscode": "^1.84.0",
     "typescript": "^5"
   }
 }
