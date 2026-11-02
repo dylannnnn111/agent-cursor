@@ -60,7 +60,7 @@ Connecting adds one hook entry per event to that agent's config (a backup is sav
 |---|---|---|
 | `agentCursor.follow` | `false` | Open each file the agent moves to |
 
-Colours can be changed under `workbench.colorCustomizations` (`agentCursor.agent0` to `agentCursor.agent4`).
+Colours can be changed under `workbench.colorCustomizations` (`agentCursor.claude`, `agentCursor.codex`, `agentCursor.gemini` and so on).
 
 ## Limits
 
