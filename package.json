@@ -2,7 +2,7 @@
   "name": "agent-cursor",
   "displayName": "Agent Cursor",
   "description": "See where your coding agent is working, live: a marker on the line it's on, glowing edits, explorer badges and a sidebar where it moves between your files.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "dylanlewis",
   "license": "MIT",
   "author": {

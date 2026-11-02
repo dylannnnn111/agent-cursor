@@ -59,6 +59,14 @@
   const esc = (s) =>
     String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+  // The webview's CSP blocks inline style attributes, so styles go on through the DOM.
+  function applyCss(root) {
+    for (const el of root.querySelectorAll('[data-css]')) {
+      el.style.cssText = el.dataset.css;
+      el.removeAttribute('data-css');
+    }
+  }
+
   function persist() {
     vscode.setState({ collapsed: [...collapsed], showAll });
   }
@@ -147,14 +155,15 @@
       .map((r, i) => {
         const pad = 8 + r.depth * 12;
         if (r.kind === 'dir') {
-          return `<div class="row dir" data-dir="${esc(r.path)}" style="top:${i * ROW}px;padding-left:${pad}px">
+          return `<div class="row dir" data-dir="${esc(r.path)}" data-css="top:${i * ROW}px;padding-left:${pad}px">
             <span class="chev">${r.collapsed ? '▸' : '▾'}</span><span class="name">${esc(r.name)}</span></div>`;
         }
         const ext = (r.name.match(/\.([a-z0-9]+)$/i) || [])[1] || '';
-        return `<div class="row file" data-file="${esc(r.file)}" style="top:${i * ROW}px;padding-left:${pad + 14}px">
+        return `<div class="row file" data-file="${esc(r.file)}" data-css="top:${i * ROW}px;padding-left:${pad + 14}px">
           <span class="ext ext-${esc(ext.toLowerCase())}"></span><span class="name">${esc(r.name)}</span><span class="mark"></span></div>`;
       })
       .join('');
+    applyCss($('rows'));
     $('rows').style.height = `${rows.length * ROW}px`;
     $('tree').style.height = `${Math.max(rows.length, 1) * ROW}px`;
 
@@ -286,12 +295,13 @@
     box.innerHTML = order
       .map((a) => {
         const where = a.file ? `<button class="where" data-file="${esc(a.file)}" data-line="${a.line ?? 0}">${esc(a.file.split(/[\\/]/).pop())}${a.line !== undefined ? `:${a.line + 1}` : ''}</button>` : '';
-        return `<div class="who ${a.sub ? 'sub' : ''} ${a.activity !== 'idle' ? 'busy' : ''}" style="--c:${color(a.colorIndex)}">
+        return `<div class="who ${a.sub ? 'sub' : ''} ${a.activity !== 'idle' ? 'busy' : ''}" data-css="--c:${color(a.colorIndex)}">
           <span class="dot"></span>
           <div class="txt"><div class="line1"><b>${esc(a.label)}</b><span class="pill">${esc(VERB[a.activity] || a.activity)}</span></div>
           <div class="line2">${esc(a.detail)} ${where}</div></div></div>`;
       })
       .join('');
+    applyCss(box);
   }
 
   app.addEventListener('click', (e) => {
@@ -319,10 +329,11 @@
     }
     list.innerHTML = state.feed
       .map(
-        (f) => `<li style="--c:${color(f.colorIndex)}" ${f.file ? `data-file="${esc(f.file)}" data-line="${f.line ?? 0}"` : ''} class="${f.file ? 'link' : ''}">
+        (f) => `<li data-css="--c:${color(f.colorIndex)}" ${f.file ? `data-file="${esc(f.file)}" data-line="${f.line ?? 0}"` : ''} class="${f.file ? 'link' : ''}">
           <span class="dot"></span><span class="what"><span class="by">${esc(f.label)}</span> ${esc(f.text)}</span><time>${ago(f.at)}</time></li>`,
       )
       .join('');
+    applyCss(list);
   }
 
   setInterval(() => {
