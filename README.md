@@ -13,11 +13,11 @@ When Claude Code reads or edits a file, Agent Cursor shows it like a second pers
 
 No setup to learn. Install it, connect Claude Code once, then just watch.
 
-<!-- demo GIF goes here -->
+![Two Claude Code sessions working in the same folder, each shown in its own colour in the Agent panel and the editor](docs/demo.gif)
 
 ## Install
 
-1. Install **Agent Cursor** from the VS Code Marketplace (or Open VSX), or install the `.vsix` with *Extensions: Install from VSIX...*
+1. Install **Agent Cursor**: download the `.vsix` from [Releases](https://github.com/dylannnnn111/agent-cursor/releases) and in VS Code run *Extensions: Install from VSIX...* (Marketplace listing coming)
 2. Run **Agent Cursor: Connect Claude Code** from the Command Palette (or the button in the Agent panel). Pick *All projects* or *Only this folder*.
 3. Start a new Claude Code session in the folder you have open. Running sessions need a restart to pick up the hooks.
 

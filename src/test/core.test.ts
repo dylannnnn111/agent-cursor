@@ -93,6 +93,12 @@ test('two sessions are told apart', () => {
   apply(m, ev({ sid: 's2', ev: 'SessionStart' }), read);
   const labels = [...m.agents.values()].map((a) => a.label);
   assert.deepEqual(labels, ['Claude', 'Claude 2']);
+  // after both end, a new session is plain "Claude" again; the demo never takes a number
+  apply(m, ev({ ev: 'SessionEnd' }), read);
+  apply(m, ev({ sid: 's2', ev: 'SessionEnd' }), read);
+  apply(m, ev({ sid: 'agent-cursor-demo', ev: 'SessionStart' }), read);
+  apply(m, ev({ sid: 's3', ev: 'SessionStart' }), read);
+  assert.deepEqual([...m.agents.values()].map((a) => a.label), ['Demo', 'Claude']);
 });
 
 test('glow fades, quiet agents go idle, SessionEnd removes them', () => {

@@ -103,6 +103,23 @@ function keyOf(ev: HookEvent): string {
   return ev.aid ? `${ev.sid}:${ev.aid}` : ev.sid;
 }
 
+export const DEMO_SID = 'agent-cursor-demo';
+
+// Lowest free number among the sessions on screen, so a fresh session after the
+// others have ended is "Claude" again rather than "Claude 4".
+function sessionLabel(m: Model, sid: string): string {
+  if (sid === DEMO_SID) return 'Demo';
+  const used = new Set<number>();
+  for (const a of m.agents.values()) {
+    if (a.parentKey || a.sid === DEMO_SID) continue;
+    const n = a.label === 'Claude' ? 1 : Number(/^Claude (\d+)$/.exec(a.label)?.[1]);
+    if (n) used.add(n);
+  }
+  let n = 1;
+  while (used.has(n)) n++;
+  return n === 1 ? 'Claude' : `Claude ${n}`;
+}
+
 function ensureSession(m: Model, ev: HookEvent): Agent {
   let a = m.agents.get(ev.sid);
   if (!a) {
@@ -110,7 +127,7 @@ function ensureSession(m: Model, ev: HookEvent): Agent {
     a = {
       key: ev.sid,
       sid: ev.sid,
-      label: m.sessions === 1 ? 'Claude' : `Claude ${m.sessions}`,
+      label: sessionLabel(m, ev.sid),
       colorIndex: m.nextColor++ % COLORS,
       activity: 'idle',
       detail: 'Waiting',

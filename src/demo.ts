@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { HookEvent } from './core/state';
+import { DEMO_SID, HookEvent } from './core/state';
 
 const CODE = /\.(py|ts|tsx|js|jsx|go|rs|java|rb|php|cs|cpp|c|h|swift|kt|md)$/i;
 
@@ -25,7 +25,7 @@ export async function pickDemoFiles(): Promise<string[]> {
 }
 
 export function demoScript(files: string[], cwd: string, start: number): HookEvent[] {
-  const sid = 'agent-cursor-demo';
+  const sid = DEMO_SID;
   const at = (s: number) => start + Math.round(s * 1000);
   const f = (i: number) => files[i % files.length];
   const n = (i: number) => lineCount(f(i));

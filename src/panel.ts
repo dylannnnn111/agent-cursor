@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { Model, snapshot } from './core/state';
 
 const EXCLUDE =
-  '{**/node_modules/**,**/.git/**,**/.venv/**,**/venv/**,**/__pycache__/**,**/dist/**,**/out/**,**/build/**,**/.next/**,**/target/**,**/.DS_Store}';
+  '{**/.*/**,**/node_modules/**,**/.git/**,**/.pytest_cache/**,**/.mypy_cache/**,**/.ruff_cache/**,**/coverage/**,**/.venv/**,**/venv/**,**/__pycache__/**,**/dist/**,**/out/**,**/build/**,**/.next/**,**/target/**,**/.DS_Store}';
 const MAX_FILES = 3000;
 
 export interface PanelHost {
